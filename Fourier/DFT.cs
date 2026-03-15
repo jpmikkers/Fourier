@@ -31,10 +31,10 @@ public static class DFT
 
         return
             [.. Enumerable.Range(0, n)
-            .Select(i =>
-                data.Select((sample, j) => sample * zetas[(i * j) % n])
-                .Aggregate(Complex.Zero, Complex.Add) * scaleFactor
-            )
+                .Select(i =>
+                    data.Select((sample, j) => sample * zetas[(i * j) % n])
+                    .Aggregate(Complex.Zero, Complex.Add) * scaleFactor
+                )
             ];
     }
 }
