@@ -15,9 +15,15 @@ public static class DFT
     private static Complex[] RootsOfUnity(int n, int direction)
         => [.. Enumerable.Range(0, n).Select(i => Complex.FromPolarCoordinates(1, direction * i * Math.Tau / n))];
 
-    public static Complex[] DiscreteFourierTransform(Complex[] dft, bool forward)
+    /// <summary>
+    /// Calculates the (forward or reverse) complex discrete fourier transform.
+    /// </summary>
+    /// <param name="data">Complex signal or spectrum</param>
+    /// <param name="forward">true to transform the data from the time domain to frequency domain, false for the inverse</param>
+    /// <returns></returns>
+    public static Complex[] DiscreteFourierTransform(Complex[] data, bool forward)
     {
-        var n = dft.Length;
+        var n = data.Length;
 
         // precalculate zetas, clockwise roots of unity for forward DFT, counterclockwise for reverse DFT
         var zetas = RootsOfUnity(n, forward ? -1 : 1);
@@ -26,7 +32,7 @@ public static class DFT
         return
             [.. Enumerable.Range(0, n)
             .Select(i =>
-                dft.Select((sample, j) => sample * zetas[(i * j) % n])
+                data.Select((sample, j) => sample * zetas[(i * j) % n])
                 .Aggregate(Complex.Zero, Complex.Add) * scaleFactor
             )
             ];
