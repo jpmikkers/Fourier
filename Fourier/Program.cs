@@ -18,14 +18,23 @@ plot1.Add.Signal(signal);
 plot1.Title("Signal");
 plot1.SavePng("signal.png", 1024, 768);
 
-var spectrum = DFT.DiscreteFourierTransform([.. signal.Select(x => (Complex)x)], forward: true);
+Complex[] complexSignal = [.. signal.Select(x => (Complex)x)];
+var spectrum = DFT.DiscreteFourierTransform(complexSignal, forward: true);
 
 var plot2 = new Plot();
 plot2.Add.Signal(spectrum.Select(Complex.Abs).ToList());
-plot2.Title("Spectrum");
-plot2.SavePng("spectrum.png", 1024, 768);
+plot2.Title("DFT Spectrum");
+plot2.SavePng("spectrum dft.png", 1024, 768);
 
-var reconstructed = DFT.DiscreteFourierTransform(spectrum, forward: false).Select(x => x.Real).ToArray();
+var spectrum_alt = complexSignal.ToArray();
+new Fft64(1024).Direct(spectrum_alt, isInverse: false);
+
+var plot2alt = new Plot();
+plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());
+plot2alt.Title("FFT Spectrum");
+plot2alt.SavePng("spectrum fft.png", 1024, 768);
+
+var reconstructed = DFT.DiscreteFourierTransform(spectrum_alt, forward: false).Select(x => x.Real).ToArray();
 
 var plot3 = new Plot();
 plot3.Add.Signal(reconstructed);
