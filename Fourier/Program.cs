@@ -2,7 +2,7 @@
 using ScottPlot;
 using System.Numerics;
 
-var signal = new double[4];
+var signal = new double[8];
 for (var i = 0; i < signal.Length; i++)
 {
     signal[i] = Random.Shared.NextDouble();
@@ -33,7 +33,7 @@ plot2.SavePng("spectrum dft.png", 1024, 768);
 
 var spectrum_alt = complexSignal.ToArray();
 //new Fft64(1024).Direct(spectrum_alt, isInverse: false);
-RecursiveFFTB.FastFourierTransform(spectrum_alt);
+RecursiveFFTC.FastFourierTransform(spectrum_alt);
 
 var plot2alt = new Plot();
 plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());
