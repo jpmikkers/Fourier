@@ -2,16 +2,21 @@
 using ScottPlot;
 using System.Numerics;
 
-var signal = new double[1024];
+var signal = new double[4];
 for (var i = 0; i < signal.Length; i++)
 {
-    signal[i] =
-        Math.Sin(i * 20 * Math.Tau / signal.Length)
-        + Math.Sin(i * 40 * Math.Tau / signal.Length)
-        + Math.Sin(i * 80 * Math.Tau / signal.Length)
-        + Math.Sin(i * 160 * Math.Tau / signal.Length)
-        + Math.Sin(i * 320 * Math.Tau / signal.Length);
+    signal[i] = Random.Shared.NextDouble();
 }
+
+//for (var i = 0; i < signal.Length; i++)
+//{
+//    signal[i] =
+//        Math.Sin(i * 20 * Math.Tau / signal.Length)
+//        + Math.Sin(i * 40 * Math.Tau / signal.Length)
+//        + Math.Sin(i * 80 * Math.Tau / signal.Length)
+//        + Math.Sin(i * 160 * Math.Tau / signal.Length)
+//        + Math.Sin(i * 320 * Math.Tau / signal.Length);
+//}
 
 var plot1 = new Plot();
 plot1.Add.Signal(signal);
@@ -28,7 +33,7 @@ plot2.SavePng("spectrum dft.png", 1024, 768);
 
 var spectrum_alt = complexSignal.ToArray();
 //new Fft64(1024).Direct(spectrum_alt, isInverse: false);
-RecursiveFFTA.FastFourierTransform(spectrum_alt);
+RecursiveFFTB.FastFourierTransform(spectrum_alt);
 
 var plot2alt = new Plot();
 plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());
