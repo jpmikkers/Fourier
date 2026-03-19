@@ -33,7 +33,7 @@ plot2.SavePng("spectrum dft.png", 1024, 768);
 
 var spectrum_alt = complexSignal.ToArray();
 //new Fft64(1024).Direct(spectrum_alt, isInverse: false);
-RecursiveFFTC.FastFourierTransform(spectrum_alt);
+RecursiveFFTD.FastFourierTransform(spectrum_alt);
 
 var plot2alt = new Plot();
 plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());

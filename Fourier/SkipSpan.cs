@@ -4,8 +4,11 @@ using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 
+/// <summary>
+/// Span wrapper that allows slicing a span into odd and even indexed elements.
+/// </summary>
+/// <typeparam name="T"></typeparam>
 // see https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Span.cs
-//[DefaultMember("Item")]
 public readonly ref struct SkipSpan<T>
 {
     public readonly Span<T> _original;
@@ -59,12 +62,6 @@ public readonly ref struct SkipSpan<T>
         get => Length == 0;
     }
 
-    /// <summary>
-    /// Copies the contents of this span into a new array.  This heap
-    /// allocates, so should generally be avoided, however it is sometimes
-    /// necessary to bridge the gap with APIs written in terms of arrays.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] ToArray()
     {
         if (IsEmpty)
