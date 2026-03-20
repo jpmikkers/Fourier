@@ -2,6 +2,7 @@ namespace Fourier;
 
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 /// <summary>
 /// Allocation free recursive FFT. It's easy to read because it uses SkipSpan to allow slicing data 
@@ -20,6 +21,13 @@ public static class RecursiveFFTD
     public static void FastFourierTransform(Span<Complex> data)
     {
         FastFourierTransform(new SkipSpan<Complex>(data));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void Butterfly(ref Complex even, ref Complex odd, Complex w)
+    {
+        var odd_w = odd * w;
+        (even, odd) = (even + odd_w, even - odd_w);
     }
 
     private static void FastFourierTransform(SkipSpan<Complex> data)
@@ -42,7 +50,7 @@ public static class RecursiveFFTD
 
                 for (var i = 1; i < (data.Length >> 1); i++)
                 {
-                    (evens[i], odds[i]) = (evens[i] + w * odds[i], evens[i] - w * odds[i]);
+                    Butterfly(ref evens[i], ref odds[i], w);
                     w *= rotationstep;
                 }
 
