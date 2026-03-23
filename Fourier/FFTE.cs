@@ -2,7 +2,6 @@ namespace Fourier;
 
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 public static class FFTE
 {
@@ -26,54 +25,62 @@ public static class FFTE
 
         var anglesPerPart = 2;              // a single butterfly does 2 angles, +w and -w (=w+pi radians)
         var nrOfParts = data.Length >> 1;   // so the first layer is len/2 parts of single butterflies
+        var rotationLookupIndex = 1;
 
         if (nrOfParts > 0)
         {
-            // first combination layer is a special case, every w is 1+0i and -1+0i, no mul needed
+            // no mul needed in the first combination layer, every w is 1+0i and -1+0i
             for (var p = 0; p < nrOfParts; p++)
             {
-                Butterfly(ref data[p << 1], ref data[(p << 1) + 1]);
+                Butterflies.Butterfly(ref data[p << 1], ref data[(p << 1) + 1]);
             }
             anglesPerPart <<= 1;
             nrOfParts >>= 1;
+            rotationLookupIndex++;
         }
 
         while (nrOfParts > 0)
         {
-            var widxinc = data.Length / anglesPerPart;
+            var wr = isInverse ? Complex.Conjugate(_rotations[rotationLookupIndex]) : _rotations[rotationLookupIndex];
 
-            //var nrOfParts = data.Length / anglesPerPart;
-            Console.WriteLine($"nrOfParts {nrOfParts} anglesPerPart {anglesPerPart}");
+            Console.WriteLine($"nrOfParts {nrOfParts} anglesPerPart {anglesPerPart} {rotationLookupIndex}");
 
             for (var p = 0; p < nrOfParts; p++)
             {
+                var w = Complex.One;
+                var evenindex = p << rotationLookupIndex;
+                var oddindex = evenindex + (anglesPerPart >> 1);
+
                 for (var a = 0; a < anglesPerPart; a += 2)
                 {
-                    var evenindex = p * anglesPerPart + (a >> 1);
-                    var oddindex = evenindex + (anglesPerPart >> 1);
-                    var we = (a >> 1) * data.Length / anglesPerPart;
-                    var wo = we + (data.Length >> 1);
-                    Console.WriteLine($"  part {p} {a}\tei {evenindex} eo {oddindex}\tangle w{we} w{wo}\twidxinc{widxinc} {nrOfParts}");
-                    var w = Complex.FromPolarCoordinates(1.0, -we * Math.Tau / data.Length);
-                    Butterfly(ref data[evenindex], ref data[oddindex], w);
+                    Butterflies.Butterfly(ref data[evenindex], ref data[oddindex], w);
+                    w *= wr;
+                    evenindex++;
+                    oddindex++;
                 }
+
+                //for (var a = 0; a < anglesPerPart; a += 2)
+                //{
+                //    var evenindex = (p << rotationLookupIndex) + (a >> 1);
+                //    var oddindex = evenindex + (anglesPerPart >> 1);
+                //    Console.WriteLine($"  part {p} {a}\tei {evenindex} eo {oddindex}");
+                //    Butterfly(ref data[evenindex], ref data[oddindex], w);
+                //    w *= wr;
+                //}
             }
 
             anglesPerPart <<= 1;
             nrOfParts >>= 1;
+            rotationLookupIndex++;
         }
-    }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Butterfly(ref Complex even, ref Complex odd, Complex w)
-    {
-        var odd_w = odd * w;
-        (even, odd) = (even + odd_w, even - odd_w);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void Butterfly(ref Complex even, ref Complex odd)
-    {
-        (even, odd) = (even + odd, even - odd);
+        if (isInverse)
+        {
+            var scaleFactor = Math.ScaleB(1.0, -BitOperations.Log2((uint)data.Length));
+            foreach (ref var c in data)
+            {
+                c *= scaleFactor;
+            }
+        }
     }
 }
