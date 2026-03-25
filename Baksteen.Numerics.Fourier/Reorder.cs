@@ -1,4 +1,4 @@
-﻿namespace Fourier;
+﻿namespace Baksteen.Numerics.Fourier;
 
 using System;
 using System.Buffers.Binary;

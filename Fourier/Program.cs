@@ -1,4 +1,4 @@
-﻿using Fourier;
+﻿using Baksteen.Numerics.Fourier;
 using ScottPlot;
 using System.Numerics;
 
@@ -32,15 +32,16 @@ plot2.Title("DFT Spectrum");
 plot2.SavePng("spectrum dft.png", 1024, 768);
 
 var spectrum_alt = complexSignal.ToArray();
-//new Fft64(1024).Direct(spectrum_alt, isInverse: false);
-FFTE.FastFourierTransform(spectrum_alt, isInverse: false);
+//new Fft64(spectrum_alt.Length).Direct(spectrum_alt, isInverse: false);
+//FFTL.FastFourierTransform(spectrum_alt, isInverse: false);
+new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
 
 var plot2alt = new Plot();
 plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());
 plot2alt.Title("FFT Spectrum");
 plot2alt.SavePng("spectrum fft.png", 1024, 768);
 
-FFTE.FastFourierTransform(spectrum_alt, isInverse: true);
+FFTH.FastFourierTransform(spectrum_alt, isInverse: true);
 var reconstructed = spectrum_alt.Select(x => x.Real).ToArray();
 //var reconstructed = DFT.DiscreteFourierTransform(spectrum_alt, forward: false).Select(x => x.Real).ToArray();
 

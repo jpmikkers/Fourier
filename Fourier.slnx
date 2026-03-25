@@ -1,3 +1,5 @@
 <Solution>
+  <Project Path="Baksteen.Numerics.Fourier/Baksteen.Numerics.Fourier.csproj" Id="02c98985-5e53-4161-b77b-34d171f47d23" />
+  <Project Path="Benchmark/Benchmark.csproj" Id="e7dabe43-22be-4d5c-b92a-904c5093d040" />
   <Project Path="Fourier/Fourier.csproj" />
 </Solution>

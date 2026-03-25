@@ -1,18 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ScottPlot" Version="5.1.57" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageReference Include="Microsoft.VisualStudio.DiagnosticsHub.BenchmarkDotNetDiagnosers" Version="18.6.37110.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Baksteen.Numerics.Fourier\Baksteen.Numerics.Fourier.csproj" />
   </ItemGroup>
-
 </Project>

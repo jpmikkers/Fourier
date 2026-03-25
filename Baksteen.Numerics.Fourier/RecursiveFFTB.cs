@@ -1,13 +1,16 @@
-namespace Fourier;
+namespace Baksteen.Numerics.Fourier;
 
 using System;
 using System.Numerics;
 
 /// <summary>
-/// Same as <see cref="RecursiveFFTB"/> , but without precomputed rotation table.
+/// Same as <see cref="RecursiveFFTA"/> , but adds Radix2 and Radix4 FFT shortcuts that don't need multiplications.
 /// </summary>
-public static class RecursiveFFTC
+public static class RecursiveFFTB
 {
+    private static Complex[] SemiRootsOfUnity(int n, int direction)
+        => [.. Enumerable.Range(0, n / 2).Select(i => Complex.FromPolarCoordinates(1, direction * i * Math.Tau / n))];
+
     public static void FastFourierTransform(Complex[] data)
     {
         if (data.Length < 2)
@@ -42,17 +45,14 @@ public static class RecursiveFFTC
             FastFourierTransform(evens);
             FastFourierTransform(odds);
 
-            var rotationstep = Complex.FromPolarCoordinates(1, -Math.Tau / data.Length);
+            var zetas = SemiRootsOfUnity(data.Length, -1);
+
             var halfLength = data.Length / 2;
-
-            data[0] = evens[0] + odds[0];
-            data[halfLength] = evens[0] - odds[0];
-
-            var w = rotationstep;
-            for (var i = 1; i < halfLength; i++, w *= rotationstep)
+            for (var i = 0; i < halfLength; i++)
             {
-                data[i] = evens[i] + w * odds[i];
-                data[halfLength + i] = evens[i] - w * odds[i];
+                data[i] = evens[i] + zetas[i] * odds[i];
+                // -zetas[i] is the same as +zetas[i+halfLength], so that allows cutting the zeta table in half
+                data[halfLength + i] = evens[i] - zetas[i] * odds[i];
             }
         }
     }
