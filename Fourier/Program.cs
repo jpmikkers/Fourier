@@ -2,6 +2,11 @@
 using ScottPlot;
 using System.Numerics;
 
+//int[] even = Enumerable.Range(0, 9).ToArray();
+//ArrayUtils.ReorderEvenOddRelative2(even);
+//Console.WriteLine("n=6 result : " + string.Join(" ", even));
+//return;
+
 var signal = new double[16];
 for (var i = 0; i < signal.Length; i++)
 {
@@ -34,7 +39,8 @@ plot2.SavePng("spectrum dft.png", 1024, 768);
 var spectrum_alt = complexSignal.ToArray();
 //new Fft64(spectrum_alt.Length).Direct(spectrum_alt, isInverse: false);
 //FFTL.FastFourierTransform(spectrum_alt, isInverse: false);
-new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
+//new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
+FFTSimple.FastFourierTransform(spectrum_alt, false);
 
 var plot2alt = new Plot();
 plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());

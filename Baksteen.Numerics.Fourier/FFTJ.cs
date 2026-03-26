@@ -9,7 +9,7 @@ public static class FFTJ
 
     static FFTJ()
     {
-        // contains 1/2^n rad for n=0-31, so 1/1 rad, 1/2 rad, 1/4 rad, 1/8 rad etc..
+        // contains 2π/2^n for n=0-31, so π/1, π/2, π/4, π/8 etc..
         _rotations = [.. Enumerable.Range(0, 32)
             .Select(lg2 => Complex.FromPolarCoordinates(1, -Math.Tau / Math.Pow(2.0, lg2)))];
     }

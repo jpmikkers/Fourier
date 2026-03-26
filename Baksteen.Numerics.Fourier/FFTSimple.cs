@@ -3,11 +3,11 @@ namespace Baksteen.Numerics.Fourier;
 using System;
 using System.Numerics;
 
-public static class FFTF
+public static class FFTSimple
 {
     private static readonly Complex[] _rotations;
 
-    static FFTF()
+    static FFTSimple()
     {
         // contains 2π/2^n for n=0-31, so π/1, π/2, π/4, π/8 etc..
         _rotations = [.. Enumerable.Range(0, 32)
@@ -27,33 +27,17 @@ public static class FFTF
         var nrOfParts = data.Length >> 1;       // so the first layer is len/2 parts of single butterflies
         var rotationLookupIndex = 1;
 
-        if (nrOfParts > 0)
-        {
-            // no mul needed in the first combination layer, every w is 1+0i and -1+0i
-            for (var p = 0; p < nrOfParts; p++)
-            {
-                Butterflies.Butterfly(ref data[p << 1], ref data[(p << 1) + 1]);
-            }
-            butterfliesPerPart <<= 1;
-            nrOfParts >>= 1;
-            rotationLookupIndex++;
-        }
-
         while (nrOfParts > 0)
         {
             var wr = isInverse ? Complex.Conjugate(_rotations[rotationLookupIndex]) : _rotations[rotationLookupIndex];
 
             for (var p = 0; p < nrOfParts; p++)
             {
+                var w = Complex.One;
                 var evenindex = p << rotationLookupIndex;
                 var oddindex = evenindex + butterfliesPerPart;
 
-                Butterflies.Butterfly(ref data[evenindex], ref data[oddindex]);
-                var w = wr;
-                evenindex++;
-                oddindex++;
-
-                for (var a = 1; a < butterfliesPerPart; a++)
+                for (var a = 0; a < butterfliesPerPart; a++)
                 {
                     Butterflies.Butterfly(ref data[evenindex], ref data[oddindex], w);
                     w *= wr;

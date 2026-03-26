@@ -51,8 +51,7 @@ public static class RecursiveFFTC
             var w = rotationstep;
             for (var i = 1; i < halfLength; i++, w *= rotationstep)
             {
-                data[i] = evens[i] + w * odds[i];
-                data[halfLength + i] = evens[i] - w * odds[i];
+                (data[i], data[halfLength + i]) = Butterflies.ButterflyTuple(evens[i], odds[i], w);
             }
         }
     }

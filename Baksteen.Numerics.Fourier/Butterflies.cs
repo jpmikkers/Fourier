@@ -6,6 +6,13 @@ using System.Runtime.CompilerServices;
 internal static class Butterflies
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static (Complex even, Complex odd) ButterflyTuple(Complex even, Complex odd, Complex w)
+    {
+        var odd_w = w * odd;
+        return (even + odd_w, even - odd_w);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Butterfly(ref Complex even, ref Complex odd, Complex w)
     {
         var odd_w = w * odd;

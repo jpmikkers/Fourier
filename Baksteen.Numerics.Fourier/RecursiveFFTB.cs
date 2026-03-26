@@ -50,9 +50,7 @@ public static class RecursiveFFTB
             var halfLength = data.Length / 2;
             for (var i = 0; i < halfLength; i++)
             {
-                data[i] = evens[i] + zetas[i] * odds[i];
-                // -zetas[i] is the same as +zetas[i+halfLength], so that allows cutting the zeta table in half
-                data[halfLength + i] = evens[i] - zetas[i] * odds[i];
+                (data[i], data[halfLength + i]) = Butterflies.ButterflyTuple(evens[i], odds[i], zetas[i]);
             }
         }
     }
