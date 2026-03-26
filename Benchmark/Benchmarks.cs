@@ -12,7 +12,7 @@ public class Benchmarks
 {
     //private SHA256 sha256 = SHA256.Create();
     //private byte[] data;
-    private const int fftsize = 4096;
+    private const int fftsize = 2048;
     private const int seed = 42;
     private const int repeats = 100;
     private Complex[] data;
@@ -37,12 +37,12 @@ public class Benchmarks
         fft64.Direct(tmpdata, false);
     }
 
-    [Benchmark]
-    public void BenchFFTK()
-    {
-        Array.Copy(data, tmpdata, data.Length);
-        FFTK.FastFourierTransform(tmpdata, false);
-    }
+    //[Benchmark]
+    //public void BenchFFTK()
+    //{
+    //    Array.Copy(data, tmpdata, data.Length);
+    //    FFTK.FastFourierTransform(tmpdata, false);
+    //}
 
     [Benchmark()]
     public void BenchFFTL()
@@ -58,13 +58,12 @@ public class Benchmarks
         fftm.FastFourierTransform(tmpdata, false);
     }
 
-    //[Benchmark()]
-    //public void BenchRecursiveFFTA()
-    //{
-    //    Array.Copy(data, tmpdata, data.Length);
-    //    RecursiveFFTA.FastFourierTransform(data);
-    //    //fftm.FastFourierTransform(tmpdata, false);
-    //}
+    [Benchmark()]
+    public void BenchFFTSimple()
+    {
+        Array.Copy(data, tmpdata, data.Length);
+        FFTSimple.FastFourierTransform(data, false);
+    }
 
     //[Benchmark()]
     //public void BenchRecursiveFFTC()

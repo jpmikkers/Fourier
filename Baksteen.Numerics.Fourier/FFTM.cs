@@ -130,10 +130,6 @@ public class FFTM
             stage++;
         }
 
-        if (isInverse)
-        {
-            var scaleFactor = Math.ScaleB(1.0, -BitOperations.Log2((uint)data.Length));
-            foreach (ref var c in data) { c *= scaleFactor; }
-        }
+        if (isInverse) FFTUtils.Scale(data);
     }
 }

@@ -5,15 +5,6 @@ using System.Numerics;
 
 public static class FFTE
 {
-    private static readonly Complex[] _rotations;
-
-    static FFTE()
-    {
-        // contains 2π/2^n for n=0-31, so π/1, π/2, π/4, π/8 etc..
-        _rotations = [.. Enumerable.Range(0, 32)
-            .Select(lg2 => Complex.FromPolarCoordinates(1, -Math.Tau / Math.Pow(2.0, lg2)))];
-    }
-
     public static void FastFourierTransform(Span<Complex> data, bool isInverse)
     {
         if (!BitOperations.IsPow2(data.Length))
@@ -41,7 +32,7 @@ public static class FFTE
 
         while (nrOfParts > 0)
         {
-            var wr = isInverse ? Complex.Conjugate(_rotations[rotationLookupIndex]) : _rotations[rotationLookupIndex];
+            var wr = FFTUtils.GetRotation(rotationLookupIndex, isInverse);
 
             //Console.WriteLine($"nrOfParts {nrOfParts} anglesPerPart {anglesPerPart} {rotationLookupIndex}");
 
@@ -74,13 +65,6 @@ public static class FFTE
             rotationLookupIndex++;
         }
 
-        if (isInverse)
-        {
-            var scaleFactor = Math.ScaleB(1.0, -BitOperations.Log2((uint)data.Length));
-            foreach (ref var c in data)
-            {
-                c *= scaleFactor;
-            }
-        }
+        if (isInverse) FFTUtils.Scale(data);
     }
 }
