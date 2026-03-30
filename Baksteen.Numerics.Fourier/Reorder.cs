@@ -5,7 +5,7 @@ using System.Buffers.Binary;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-static class Reorder
+public static class Reorder
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint BitReverse(uint x, int resultbits)
@@ -26,6 +26,48 @@ static class Reorder
             {
                 (samples[i], samples[j]) = (samples[j], samples[i]);
             }
+        }
+    }
+
+    public static void PartitionEven<T>(Span<T> blah)
+    {
+        var hl = blah.Length >> 1;
+
+        for (var i = 1; i < hl; i++)
+        {
+            (blah[i], blah[i << 1]) = (blah[i << 1], blah[i]);
+        }
+    }
+
+    public static void UnPartitionEven<T>(Span<T> blah)
+    {
+        var hl = blah.Length >> 1;
+
+        for (var i = hl - 1; i >= 0; i--)
+        {
+            (blah[i], blah[i << 1]) = (blah[i << 1], blah[i]);
+        }
+    }
+
+    public static void PartitionOdd<T>(Span<T> blah)
+    {
+        for (var e = 2; e < blah.Length; e += 2)
+        {
+            var t1 = (blah.Length - 1) - e;
+            var t2 = (blah.Length - 1) - (e >> 1);
+
+            (blah[t2], blah[t1]) = (blah[t1], blah[t2]);
+        }
+    }
+
+    public static void UnPartitionOdd<T>(Span<T> blah)
+    {
+        for (var e = (blah.Length - 2); e >= 2; e -= 2)
+        {
+            var t1 = (blah.Length - 1) - e;
+            var t2 = (blah.Length - 1) - (e >> 1);
+
+            (blah[t2], blah[t1]) = (blah[t1], blah[t2]);
         }
     }
 

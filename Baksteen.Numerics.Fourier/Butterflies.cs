@@ -2,14 +2,51 @@
 
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 internal static class Butterflies
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static (Complex even, Complex odd) ButterflyTuple(Complex even, Complex odd, Complex w)
     {
-        var odd_w = w * odd;
+        var odd_w = KaratsubaMultiply(w, odd);
         return (even + odd_w, even - odd_w);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe void ButterflyVectorized(ref Complex even, ref Complex odd, Vector128<double> w)
+    {
+        //var s_even = MemoryMarshal.Cast<Complex, double>(MemoryMarshal.CreateSpan(ref even, 1));
+        //var s_odd = MemoryMarshal.Cast<Complex, double>(MemoryMarshal.CreateSpan(ref odd, 1));
+        //var s_w = MemoryMarshal.Cast<Complex, double>(MemoryMarshal.CreateReadOnlySpan(ref w, 1));
+
+        fixed (Complex* pce = &even)
+        fixed (Complex* pco = &odd)
+        {
+            var pe = (double*)pce;
+            var po = (double*)pco;
+
+            var vec_even = Sse2.LoadVector128(pe);
+            var vec_odd_w = Vectorized.ComplexMulSse2(Sse2.LoadVector128(po), w);
+
+            var result_even = Sse2.Add(vec_even, vec_odd_w);
+            var result_odd = Sse2.Subtract(vec_even, vec_odd_w);
+
+            Sse2.Store(pe, result_even);
+            Sse2.Store(po, result_odd);
+            //result_even.Store(pe);
+            //result_odd.Store(po);
+        }
+        //var odd_w = w * odd;
+        //(even, odd) = (even + odd_w, even - odd_w);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static (Vector128<double> re, Vector128<double> ro) ButterflyVectorized(Vector128<double> even, Vector128<double> odd, Vector128<double> w)
+    {
+        var vec_odd_w = Vectorized.ComplexMulSse2(odd, w);
+        return (Sse2.Add(even, vec_odd_w), Sse2.Subtract(even, vec_odd_w));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

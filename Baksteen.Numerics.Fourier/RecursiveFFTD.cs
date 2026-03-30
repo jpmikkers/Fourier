@@ -24,12 +24,35 @@ public static class RecursiveFFTD
 
     private static void FastFourierTransform(SkipSpan<Complex> data)
     {
-        if (data.Length >= 2)
+        if (data.Length < 2)
+        {
+            return;
+        }
+        else if (data.Length == 2)
+        {
+            // radix 2 FFT, 180 degrees
+            (data[0], data[1]) = (data[0] + data[1], data[0] - data[1]);
+        }
+        else if (data.Length == 4)
+        {
+            // radix 4 FFT, 90 degrees
+            // Pairwise sums and differences
+            var s0 = data[0] + data[2];
+            var s1 = data[1] + data[3];
+            var d0 = data[0] - data[2];
+            var d1 = data[1] - data[3];
+            d1 = new Complex(d1.Imaginary, -d1.Real);                  // rotate 90 degrees clockwise
+            data[0] = s0 + s1;                                         // X0 = s0+s1 = x0+x1+x2+x3
+            data[2] = s0 - s1;                                         // X2 = s0-s1 = x0+x2-x1-x3 = x0-x1+x2-x3
+            data[1] = d0 + d1;                                         // X1 = d0 - j*d1 (90 degrees clockwise)
+            data[3] = d0 - d1;                                         // X3 = d0 + j*d1 (90 degrees counterclockwise)
+        }
+        else
         {
             var evens = data.SliceEvens();
-            var odds = data.SliceOdds();
-
             FastFourierTransform(evens);
+
+            var odds = data.SliceOdds();
             FastFourierTransform(odds);
 
             var rotationstep = _rotations[BitOperations.Log2((uint)data.Length)];
@@ -45,7 +68,7 @@ public static class RecursiveFFTD
             // 'evens' and 'odds' alias 'data' so it would result in clobbering results. So I temporarily store
             // the results in evens and odds itself. Now we have to reorder those so that 'data' becomes the
             // concatenation of evens and odds.
-            ReorderEvenOdd(data);
+            ReorderEvenOdd2(data);
         }
     }
 
@@ -73,6 +96,36 @@ public static class RecursiveFFTD
                 for (i = s; (i = P(i, n)) != s;)
                     (tmp, data[i]) = (data[i], tmp);
                 data[s] = tmp;
+            }
+        }
+    }
+
+    public static void ReorderEvenOdd2<T>(SkipSpan<T> array)
+    {
+        if (array.Length < 2) return;
+
+        // Helper to compute the original source index for target position i
+        // (this defines the exact permutation that preserves relative order)
+        static int Source(int i, int n)
+        {
+            var m = (n + 1) >> 1;   // ⌈n/2⌉ – size of the first half
+            var j = i;
+            do
+            {
+                j = j < m ? (j << 1) : ((j - m) << 1) + 1;
+            }
+            while (j < i);
+            return j;
+        }
+
+        for (var i = 1; i < array.Length; i++)
+        {
+            var j = Source(i, array.Length);
+
+            // Perform the swap (self-swap is harmless and never occurs here)
+            if (j != i)
+            {
+                (array[i], array[j]) = (array[j], array[i]);
             }
         }
     }

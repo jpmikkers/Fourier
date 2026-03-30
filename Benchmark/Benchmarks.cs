@@ -12,7 +12,7 @@ public class Benchmarks
 {
     //private SHA256 sha256 = SHA256.Create();
     //private byte[] data;
-    private const int fftsize = 2048;
+    private const int fftsize = 4096;
     private const int seed = 42;
     private const int repeats = 100;
     private Complex[] data;
@@ -30,7 +30,7 @@ public class Benchmarks
         fftm = new FFTM(fftsize);
     }
 
-    [Benchmark(Baseline = true)]
+    //[Benchmark(Baseline = true)]
     public void BenchFFT64()
     {
         Array.Copy(data, tmpdata, data.Length);
@@ -44,35 +44,49 @@ public class Benchmarks
     //    FFTK.FastFourierTransform(tmpdata, false);
     //}
 
-    [Benchmark()]
-    public void BenchFFTL()
-    {
-        Array.Copy(data, tmpdata, data.Length);
-        FFTL.FastFourierTransform(tmpdata, false);
-    }
+    //[Benchmark()]
+    //public void BenchFFTL()
+    //{
+    //    Array.Copy(data, tmpdata, data.Length);
+    //    FFTL.FastFourierTransform(tmpdata, false);
+    //}
 
-    [Benchmark()]
-    public void BenchFFTM()
-    {
-        Array.Copy(data, tmpdata, data.Length);
-        fftm.FastFourierTransform(tmpdata, false);
-    }
+    //[Benchmark()]
+    //public void BenchFFTM()
+    //{
+    //    Array.Copy(data, tmpdata, data.Length);
+    //    fftm.FastFourierTransform(tmpdata, false);
+    //}
 
-    [Benchmark()]
+    [Benchmark(Baseline = true)]
     public void BenchFFTSimple()
     {
         Array.Copy(data, tmpdata, data.Length);
         FFTSimple.FastFourierTransform(data, false);
     }
 
+    [Benchmark()]
+    public void BenchFFTSimpleVectorized()
+    {
+        Array.Copy(data, tmpdata, data.Length);
+        FFTSimpleVectorized.FastFourierTransform(data, false);
+    }
+
     //[Benchmark()]
-    //public void BenchRecursiveFFTC()
+    //public void BenchRecursiveFFTD()
     //{
     //    Array.Copy(data, tmpdata, data.Length);
-    //    RecursiveFFTC.FastFourierTransform(data);
+    //    RecursiveFFTD.FastFourierTransform(data);
     //    //fftm.FastFourierTransform(tmpdata, false);
     //}
 
+    //[Benchmark()]
+    //public void BenchRecursiveFFTE()
+    //{
+    //    Array.Copy(data, tmpdata, data.Length);
+    //    RecursiveFFTE.FastFourierTransform(data, false);
+    //    //fftm.FastFourierTransform(tmpdata, false);
+    //}
 
     //[Benchmark()]
     //public void BenchFFTE()

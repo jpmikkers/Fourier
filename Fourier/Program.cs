@@ -2,9 +2,19 @@
 using ScottPlot;
 using System.Numerics;
 
-//int[] even = Enumerable.Range(0, 9).ToArray();
-//ArrayUtils.ReorderEvenOddRelative2(even);
-//Console.WriteLine("n=6 result : " + string.Join(" ", even));
+//Vector256<double> a = Vector256.Create(1.0, 2.0, 3.0, 4.0);
+//Vector256<double> b = Vector256.Create(5.0, 6.0, 7.0, 8.0);
+
+//var result1 = Vectorized.ComplexMulAvx(a, b);
+//var result2 = new Complex(1, 2) * new Complex(5, 6);
+//var result3 = new Complex(3, 4) * new Complex(7, 8);
+
+//var result4 = Vectorized.ComplexMulSse2(Vector128.Create(1.0, 2.0), Vector128.Create(5.0, 6.0));
+//var result5 = Vectorized.ComplexMulSse2(Vector128.Create(3.0, 4.0), Vector128.Create(7.0, 8.0));
+
+
+////ArrayUtils.ReorderEvenOddRelative2(even);
+////Console.WriteLine("n=6 result : " + string.Join(" ", blah));
 //return;
 
 var signal = new double[16];
@@ -40,7 +50,8 @@ var spectrum_alt = complexSignal.ToArray();
 //new Fft64(spectrum_alt.Length).Direct(spectrum_alt, isInverse: false);
 //FFTL.FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
-FFTSimple.FastFourierTransform(spectrum_alt, false);
+FFTSimpleVectorized.FastFourierTransform(spectrum_alt, false);
+//RecursiveFFTE.FastFourierTransform(spectrum_alt, isInverse: false);
 
 var plot2alt = new Plot();
 plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());
@@ -55,3 +66,4 @@ var plot3 = new Plot();
 plot3.Add.Signal(reconstructed);
 plot3.Title("Reconstructed signal");
 plot3.SavePng("reconstructed.png", 1024, 768);
+
