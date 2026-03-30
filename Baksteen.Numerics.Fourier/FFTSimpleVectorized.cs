@@ -58,15 +58,27 @@ public static class FFTSimpleVectorized
                     var peven = (double*)(vptr + evenindex);
                     var podd = (double*)(vptr + oddindex);
 
-                    for (var a = 0; a < butterfliesPerPart; a++)
+                    for (var a = 0; a < butterfliesPerPart; a += 2)
                     {
-                        var even = Sse2.LoadVector128(peven);
-                        var odd_w = Vectorized.ComplexMulSse2(Sse2.LoadVector128(podd), w);
-                        Sse2.Add(even, odd_w).Store(peven);
-                        Sse2.Subtract(even, odd_w).Store(podd);
+                        var even0 = Sse2.LoadVector128(peven);
+                        var odd0 = Vectorized.ComplexMulSse2(Sse2.LoadVector128(podd), w);
+                        var re0 = Sse2.Add(even0, odd0);
+                        var ro0 = Sse2.Subtract(even0, odd0);
                         w = Vectorized.ComplexMulSse2(w, vwr);
-                        peven += 2;
-                        podd += 2;
+
+                        var even1 = Sse2.LoadVector128(peven + 2);
+                        var odd1 = Vectorized.ComplexMulSse2(Sse2.LoadVector128(podd + 2), w);
+                        var re1 = Sse2.Add(even1, odd1);
+                        var ro1 = Sse2.Subtract(even1, odd1);
+                        w = Vectorized.ComplexMulSse2(w, vwr);
+
+                        Sse2.Store(peven, re0);
+                        Sse2.Store(podd, ro0);
+                        Sse2.Store(peven + 2, re1);
+                        Sse2.Store(podd + 2, ro1);
+
+                        peven += 4;
+                        podd += 4;
                     }
                 }
 
