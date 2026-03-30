@@ -62,15 +62,15 @@ public static class FFTSimpleVectorized
                     {
                         var even0 = Sse2.LoadVector128(peven);
                         var odd0 = Vectorized.ComplexMulSse2(Sse2.LoadVector128(podd), w);
+                        w = Vectorized.ComplexMulSse2(w, vwr);
                         var re0 = Sse2.Add(even0, odd0);
                         var ro0 = Sse2.Subtract(even0, odd0);
-                        w = Vectorized.ComplexMulSse2(w, vwr);
 
                         var even1 = Sse2.LoadVector128(peven + 2);
                         var odd1 = Vectorized.ComplexMulSse2(Sse2.LoadVector128(podd + 2), w);
+                        w = Vectorized.ComplexMulSse2(w, vwr);
                         var re1 = Sse2.Add(even1, odd1);
                         var ro1 = Sse2.Subtract(even1, odd1);
-                        w = Vectorized.ComplexMulSse2(w, vwr);
 
                         Sse2.Store(peven, re0);
                         Sse2.Store(podd, ro0);
