@@ -66,10 +66,10 @@ public class Benchmarks
     }
 
     [Benchmark()]
-    public void BenchFFTSimpleVectorized()
+    public void BenchFFTSimpleVectorizedB()
     {
         Array.Copy(data, tmpdata, data.Length);
-        FFTSimpleVectorized.FastFourierTransform(data, false);
+        FFTSimpleVectorizedB.FastFourierTransform(data, false);
     }
 
     //[Benchmark()]

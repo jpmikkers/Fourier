@@ -50,7 +50,7 @@ var spectrum_alt = complexSignal.ToArray();
 //new Fft64(spectrum_alt.Length).Direct(spectrum_alt, isInverse: false);
 //FFTL.FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
-FFTSimpleVectorized.FastFourierTransform(spectrum_alt, false);
+FFTSimpleVectorizedB.FastFourierTransform(spectrum_alt, false);
 //RecursiveFFTE.FastFourierTransform(spectrum_alt, isInverse: false);
 
 var plot2alt = new Plot();
