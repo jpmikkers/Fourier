@@ -8,7 +8,7 @@ using System.Runtime.Intrinsics.X86;
 
 public static class FFTSimpleVectorized
 {
-    public static void FastFourierTransform(Span<Complex> data, bool isInverse)
+    public static unsafe void FastFourierTransform(Span<Complex> data, bool isInverse)
     {
         if (!Sse2.IsSupported || !Sse3.IsSupported)
         {
@@ -43,32 +43,37 @@ public static class FFTSimpleVectorized
 
         var vspan = MemoryMarshal.Cast<Complex, Vector128<double>>(data);
 
-        while (nrOfParts > 0)
+        fixed (Vector128<double>* vptr = vspan)
         {
-            var wr = FFTUtils.GetRotation(rotationLookupIndex, isInverse);
-            var vwr = Vector128.Create(wr.Real, wr.Imaginary);
-
-            for (var p = 0; p < nrOfParts; p++)
+            while (nrOfParts > 0)
             {
-                var w = complexOne;
-                var evenindex = p << rotationLookupIndex;
-                var oddindex = evenindex + butterfliesPerPart;
+                var wr = FFTUtils.GetRotation(rotationLookupIndex, isInverse);
+                var vwr = Vector128.Create(wr.Real, wr.Imaginary);
 
-                for (var a = 0; a < butterfliesPerPart; a++)
+                for (var p = 0; p < nrOfParts; p++)
                 {
-                    var even = vspan[evenindex];
-                    var odd_w = Vectorized.ComplexMulSse2(vspan[oddindex], w);
-                    vspan[evenindex] = Sse2.Add(even, odd_w);
-                    vspan[oddindex] = Sse2.Subtract(even, odd_w);
-                    w = Vectorized.ComplexMulSse2(w, vwr);
-                    evenindex++;
-                    oddindex++;
-                }
-            }
+                    var w = complexOne;
+                    var evenindex = p << rotationLookupIndex;
+                    var oddindex = evenindex + butterfliesPerPart;
+                    var peven = (double*)(vptr + evenindex);
+                    var podd = (double*)(vptr + oddindex);
 
-            butterfliesPerPart <<= 1;
-            nrOfParts >>= 1;
-            rotationLookupIndex++;
+                    for (var a = 0; a < butterfliesPerPart; a++)
+                    {
+                        var even = Sse2.LoadVector128(peven);
+                        var odd_w = Vectorized.ComplexMulSse2(Sse2.LoadVector128(podd), w);
+                        Sse2.Add(even, odd_w).Store(peven);
+                        Sse2.Subtract(even, odd_w).Store(podd);
+                        w = Vectorized.ComplexMulSse2(w, vwr);
+                        peven += 2;
+                        podd += 2;
+                    }
+                }
+
+                butterfliesPerPart <<= 1;
+                nrOfParts >>= 1;
+                rotationLookupIndex++;
+            }
         }
 
         if (isInverse) FFTUtils.Scale(data);
