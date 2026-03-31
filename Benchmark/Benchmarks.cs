@@ -5,6 +5,7 @@ using BenchmarkDotNet.Attributes;
 using System;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 // For more information on the VS BenchmarkDotNet Diagnosers see https://learn.microsoft.com/visualstudio/profiling/profiling-with-benchmark-dotnet
 //[CPUUsageDiagnoser]
@@ -12,30 +13,45 @@ public class Benchmarks
 {
     //private SHA256 sha256 = SHA256.Create();
     //private byte[] data;
-    private const int fftsize = 4096;
+    private AlignedMemoryManager<Complex> alignedMemoryManager;
+    private const int fftsize = 2048;
     private const int seed = 42;
     private const int repeats = 100;
     private Complex[] data;
-    private Complex[] tmpdata;
+    private Memory<Complex> tmpdata;
     private Fft64 fft64;
     private FFTM fftm;
+    private FFTSimpleVectorizedC fftsvc;
+    private FFTSimpleVectorizedD fftsvd;
+    private FFTSimpleVectorizedE fftsve;
+    private FFTSimpleVectorizedF fftsvf;
 
     [GlobalSetup]
     public void Setup()
     {
         var rnd = new Random(seed);
         data = [.. Enumerable.Range(0, fftsize).Select(_ => new Complex(rnd.NextDouble(), rnd.NextDouble()))];
-        tmpdata = new Complex[fftsize];
+        alignedMemoryManager = new AlignedMemoryManager<Complex>(fftsize, Marshal.SizeOf<Complex>());
+        tmpdata = alignedMemoryManager.Memory;
         fft64 = new Fft64(fftsize);
         fftm = new FFTM(fftsize);
+        fftsvc = new FFTSimpleVectorizedC(fftsize);
+        fftsvd = new FFTSimpleVectorizedD(fftsize);
+        fftsve = new FFTSimpleVectorizedE(fftsize);
+        fftsvf = new FFTSimpleVectorizedF(fftsize);
+    }
+
+    private void ResetTmpData()
+    {
+        data.AsSpan().CopyTo(tmpdata.Span);
     }
 
     //[Benchmark(Baseline = true)]
-    public void BenchFFT64()
-    {
-        Array.Copy(data, tmpdata, data.Length);
-        fft64.Direct(tmpdata, false);
-    }
+    //public void BenchFFT64()
+    //{
+    //    ResetTmpData();
+    //    fft64.Direct(tmpdata.Span, false);
+    //}
 
     //[Benchmark]
     //public void BenchFFTK()
@@ -58,19 +74,40 @@ public class Benchmarks
     //    fftm.FastFourierTransform(tmpdata, false);
     //}
 
+    //[Benchmark()]
+    //public void BenchFFTSimple()
+    //{
+    //    Array.Copy(data, tmpdata, data.Length);
+    //    FFTSimple.FastFourierTransform(data, false);
+    //}
+
     [Benchmark(Baseline = true)]
-    public void BenchFFTSimple()
+    public void BenchFFTSimpleVectorizedC()
     {
-        Array.Copy(data, tmpdata, data.Length);
-        FFTSimple.FastFourierTransform(data, false);
+        ResetTmpData();
+        fftsvc.FastFourierTransform(tmpdata.Span, false);
     }
 
     [Benchmark()]
-    public void BenchFFTSimpleVectorizedB()
+    public void BenchFFTSimpleVectorizedE()
     {
-        Array.Copy(data, tmpdata, data.Length);
-        FFTSimpleVectorizedB.FastFourierTransform(data, false);
+        ResetTmpData();
+        fftsve.FastFourierTransform(tmpdata.Span, false);
     }
+
+    [Benchmark()]
+    public void BenchFFTSimpleVectorizedF()
+    {
+        ResetTmpData();
+        fftsvf.FastFourierTransform(tmpdata.Span, false);
+    }
+
+    //[Benchmark()]
+    //public void BenchFFTSimpleVectorizedD()
+    //{
+    //    Array.Copy(data, tmpdata, data.Length);
+    //    fftsvd.FastFourierTransform(data, false);
+    //}
 
     //[Benchmark()]
     //public void BenchRecursiveFFTD()

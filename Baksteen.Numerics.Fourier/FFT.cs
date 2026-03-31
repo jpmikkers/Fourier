@@ -70,7 +70,7 @@ public class Fft64
     /// </summary>
     /// <param name="re">Array of real parts</param>
     /// <param name="im">Array of imaginary parts</param>
-    public void Direct(Complex[] data, bool isInverse)
+    public void Direct(Span<Complex> data, bool isInverse)
     {
         var L = _fftSize;
         var M = _fftSize >> 1;
