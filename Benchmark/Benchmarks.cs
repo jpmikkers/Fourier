@@ -14,7 +14,7 @@ public class Benchmarks
     //private SHA256 sha256 = SHA256.Create();
     //private byte[] data;
     private AlignedMemoryManager<Complex> alignedMemoryManager;
-    private const int fftsize = 2048;
+    private const int fftsize = 4096;
     private const int seed = 42;
     private const int repeats = 100;
     private Complex[] data;
@@ -25,6 +25,7 @@ public class Benchmarks
     private FFTSimpleVectorizedD fftsvd;
     private FFTSimpleVectorizedE fftsve;
     private FFTSimpleVectorizedF fftsvf;
+    private FFTSimpleBigLut fftsbl;
 
     [GlobalSetup]
     public void Setup()
@@ -39,6 +40,7 @@ public class Benchmarks
         fftsvd = new FFTSimpleVectorizedD(fftsize);
         fftsve = new FFTSimpleVectorizedE(fftsize);
         fftsvf = new FFTSimpleVectorizedF(fftsize);
+        fftsbl = new FFTSimpleBigLut(fftsize);
     }
 
     private void ResetTmpData()
@@ -46,12 +48,12 @@ public class Benchmarks
         data.AsSpan().CopyTo(tmpdata.Span);
     }
 
-    //[Benchmark(Baseline = true)]
-    //public void BenchFFT64()
-    //{
-    //    ResetTmpData();
-    //    fft64.Direct(tmpdata.Span, false);
-    //}
+    [Benchmark(Baseline = true)]
+    public void BenchFFT64()
+    {
+        ResetTmpData();
+        fft64.Direct(tmpdata.Span, false);
+    }
 
     //[Benchmark]
     //public void BenchFFTK()
@@ -60,12 +62,12 @@ public class Benchmarks
     //    FFTK.FastFourierTransform(tmpdata, false);
     //}
 
-    //[Benchmark()]
-    //public void BenchFFTL()
-    //{
-    //    Array.Copy(data, tmpdata, data.Length);
-    //    FFTL.FastFourierTransform(tmpdata, false);
-    //}
+    [Benchmark()]
+    public void BenchFFTL()
+    {
+        ResetTmpData();
+        FFTL.FastFourierTransform(tmpdata.Span, false);
+    }
 
     //[Benchmark()]
     //public void BenchFFTM()
@@ -81,12 +83,12 @@ public class Benchmarks
     //    FFTSimple.FastFourierTransform(data, false);
     //}
 
-    [Benchmark(Baseline = true)]
-    public void BenchFFTSimpleVectorizedC()
-    {
-        ResetTmpData();
-        fftsvc.FastFourierTransform(tmpdata.Span, false);
-    }
+    //[Benchmark(Baseline = true)]
+    //public void BenchFFTSimpleVectorizedC()
+    //{
+    //    ResetTmpData();
+    //    fftsvc.FastFourierTransform(tmpdata.Span, false);
+    //}
 
     [Benchmark()]
     public void BenchFFTSimpleVectorizedE()
@@ -100,6 +102,13 @@ public class Benchmarks
     {
         ResetTmpData();
         fftsvf.FastFourierTransform(tmpdata.Span, false);
+    }
+
+    [Benchmark()]
+    public void BenchFFTSimpleBigLut()
+    {
+        ResetTmpData();
+        fftsbl.FastFourierTransform(tmpdata.Span, false);
     }
 
     //[Benchmark()]
