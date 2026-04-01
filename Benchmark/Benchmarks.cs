@@ -62,12 +62,12 @@ public class Benchmarks
     //    FFTK.FastFourierTransform(tmpdata, false);
     //}
 
-    [Benchmark()]
-    public void BenchFFTL()
-    {
-        ResetTmpData();
-        FFTL.FastFourierTransform(tmpdata.Span, false);
-    }
+    //[Benchmark()]
+    //public void BenchFFTL()
+    //{
+    //    ResetTmpData();
+    //    FFTL.FastFourierTransform(tmpdata.Span, false);
+    //}
 
     //[Benchmark()]
     //public void BenchFFTM()
@@ -104,12 +104,12 @@ public class Benchmarks
         fftsvf.FastFourierTransform(tmpdata.Span, false);
     }
 
-    [Benchmark()]
-    public void BenchFFTSimpleBigLut()
-    {
-        ResetTmpData();
-        fftsbl.FastFourierTransform(tmpdata.Span, false);
-    }
+    //[Benchmark()]
+    //public void BenchFFTSimpleBigLut()
+    //{
+    //    ResetTmpData();
+    //    fftsbl.FastFourierTransform(tmpdata.Span, false);
+    //}
 
     //[Benchmark()]
     //public void BenchFFTSimpleVectorizedD()

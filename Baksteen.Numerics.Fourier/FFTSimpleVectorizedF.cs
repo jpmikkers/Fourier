@@ -53,7 +53,6 @@ public class FFTSimpleVectorizedF
         var butterfliesPerPart = 1;             // a single butterfly does 2 angles, +w and -w (=w+pi radians)
         var nrOfParts = data.Length >> 1;       // so the first layer is len/2 parts of single butterflies
         var rotationLookupIndex = 1;
-        var rotationIndexStep = data.Length >> 1;
 
         fixed (Complex* vptr = data)
         fixed (Complex* wptr = _wtable.Span)
@@ -72,90 +71,37 @@ public class FFTSimpleVectorizedF
                 butterfliesPerPart <<= 1;
                 nrOfParts >>= 1;
                 rotationLookupIndex++;
-                rotationIndexStep >>= 1;
             }
 
             while (nrOfParts > 0)
             {
-                if (butterfliesPerPart > nrOfParts)
+                for (var p = 0; p < nrOfParts; p++)
                 {
-                    for (var p = 0; p < nrOfParts; p++)
-                    {
-                        var evenindex = p << rotationLookupIndex;
-                        var oddindex = evenindex + butterfliesPerPart;
-                        var peven = (vptr + evenindex);
-                        var podd = (vptr + oddindex);
-                        var pw = wptr;
-
-                        ButterflyOne(peven, podd);
-
-                        peven++;
-                        podd++;
-                        pw += rotationIndexStep;
-
-                        for (var a = 1; a < butterfliesPerPart; a++)
-                        {
-                            Butterfly(peven, podd, Vector128.LoadAligned((double*)pw));
-                            peven++;
-                            podd++;
-                            pw += rotationIndexStep;
-                        }
-                    }
-                }
-                else
-                {
+                    var peven = vptr + (p << rotationLookupIndex);
                     var pw = wptr;
 
                     for (var a = 0; a < butterfliesPerPart; a++)
                     {
-                        var w = Vector128.LoadAligned((double*)pw);
-                        for (var p = 0; p < nrOfParts; p++)
-                        {
-                            var peven = (vptr + (p << rotationLookupIndex) + a);
-                            Butterfly(peven, peven + butterfliesPerPart, w);
-                        }
-                        pw += rotationIndexStep;
+                        Butterfly(peven, peven + butterfliesPerPart, Sse2.LoadAlignedVector128((double*)pw));
+                        peven++;
+                        pw += nrOfParts;
                     }
                 }
 
                 butterfliesPerPart <<= 1;
                 nrOfParts >>= 1;
                 rotationLookupIndex++;
-                rotationIndexStep >>= 1;
             }
         }
 
         if (isInverse) FFTUtils.Scale(data);
     }
 
-#if USEGENERICLOAD
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private unsafe void Butterfly(double* peven, double* podd, Vector128<double> w)
-    {
-        var even0 = Vector128.LoadAligned(peven);
-        var odd0 = Vectorized.ComplexMulSse2(Vector128.LoadAligned(podd), w);
-        var re0 = Sse2.Add(even0, odd0);
-        var ro0 = Sse2.Subtract(even0, odd0);
-        Vector128.StoreAligned(re0, peven);
-        Vector128.StoreAligned(ro0, podd);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private unsafe void ButterflyOne(double* peven, double* podd)
-    {
-        var even0 = Vector128.LoadAligned(peven);
-        var odd0 = Vector128.LoadAligned(podd);
-        var re0 = Sse2.Add(even0, odd0);
-        var ro0 = Sse2.Subtract(even0, odd0);
-        Vector128.StoreAligned(re0, peven);
-        Vector128.StoreAligned(ro0, podd);
-    }
-#else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private unsafe void Butterfly(Complex* peven, Complex* podd, Vector128<double> w)
     {
         var even0 = Sse2.LoadAlignedVector128((double*)peven);
-        var odd0 = Vectorized.ComplexMulSse2(w, Sse2.LoadAlignedVector128((double*)podd));
+        var odd0 = Vectorized.ComplexMulSse2(Sse2.LoadAlignedVector128((double*)podd), w);
         var re0 = Sse2.Add(even0, odd0);
         var ro0 = Sse2.Subtract(even0, odd0);
         Sse2.StoreAligned((double*)peven, re0);
@@ -194,5 +140,4 @@ public class FFTSimpleVectorizedF
     //    Sse2.Store((double*)peven, re0);
     //    Sse2.Store((double*)podd, ro0);
     //}
-#endif
 }
