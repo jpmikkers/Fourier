@@ -3,6 +3,7 @@ namespace Baksteen.Numerics.Fourier;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 public static class FFTUtils
 {
@@ -25,5 +26,19 @@ public static class FFTUtils
     {
         var scaleFactor = Math.ScaleB(1.0, -BitOperations.Log2((uint)data.Length));
         foreach (ref var c in data) { c *= scaleFactor; }
+    }
+
+    public static void AssertAlignment<T>(Span<T> data, int alignment) where T : struct
+    {
+        unsafe
+        {
+            ref T r = ref MemoryMarshal.GetReference(data);
+            nint address = (nint)Unsafe.AsPointer(ref r);
+
+            if ((address & (alignment - 1)) != 0)
+            {
+                throw new ArgumentException($"span not properly aligned to a multiple of {alignment} bytes", nameof(data));
+            }
+        }
     }
 }

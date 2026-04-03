@@ -5,7 +5,6 @@ using BenchmarkDotNet.Attributes;
 using System;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 // For more information on the VS BenchmarkDotNet Diagnosers see https://learn.microsoft.com/visualstudio/profiling/profiling-with-benchmark-dotnet
 //[CPUUsageDiagnoser]
@@ -27,6 +26,7 @@ public class Benchmarks
     private FFTSimpleVectorizedF fftsvf;
     private FFTSimpleVectorizedG fftsvg;
     private FFTSimpleVectorizedH fftsvh;
+    private FFTAvxVectorizedI fftsvi;
     private FFTSimpleBigLut fftsbl;
 
     [GlobalSetup]
@@ -34,7 +34,7 @@ public class Benchmarks
     {
         var rnd = new Random(seed);
         data = [.. Enumerable.Range(0, fftsize).Select(_ => new Complex(rnd.NextDouble(), rnd.NextDouble()))];
-        alignedMemoryManager = new AlignedMemoryManager<Complex>(fftsize, Marshal.SizeOf<Complex>());
+        alignedMemoryManager = new AlignedMemoryManager<Complex>(fftsize, 32);
         tmpdata = alignedMemoryManager.Memory;
         fft64 = new Fft64(fftsize);
         fftm = new FFTM(fftsize);
@@ -44,6 +44,7 @@ public class Benchmarks
         fftsvf = new FFTSimpleVectorizedF(fftsize);
         fftsvg = new FFTSimpleVectorizedG(fftsize);
         fftsvh = new FFTSimpleVectorizedH(fftsize);
+        fftsvi = new FFTAvxVectorizedI(fftsize);
         fftsbl = new FFTSimpleBigLut(fftsize);
     }
 
@@ -52,7 +53,7 @@ public class Benchmarks
         data.AsSpan().CopyTo(tmpdata.Span);
     }
 
-    //[Benchmark(Baseline = true)]
+    [Benchmark(Baseline = true)]
     public void BenchFFT64()
     {
         ResetTmpData();
@@ -101,8 +102,8 @@ public class Benchmarks
     //    fftsve.FastFourierTransform(tmpdata.Span, false);
     //}
 
-    [Benchmark(Baseline = true)]
-    //[Benchmark()]
+    //[Benchmark(Baseline = true)]
+    [Benchmark()]
     public void BenchFFTSimpleVectorizedF()
     {
         ResetTmpData();
@@ -116,11 +117,18 @@ public class Benchmarks
         fftsvg.FastFourierTransform(tmpdata.Span, false);
     }
 
+    //[Benchmark()]
+    //public void BenchFFTSimpleVectorizedH()
+    //{
+    //    ResetTmpData();
+    //    fftsvh.FastFourierTransform(tmpdata.Span, false);
+    //}
+
     [Benchmark()]
-    public void BenchFFTSimpleVectorizedH()
+    public void BenchFFTSimpleVectorizedI()
     {
         ResetTmpData();
-        fftsvh.FastFourierTransform(tmpdata.Span, false);
+        fftsvi.FastFourierTransform(tmpdata.Span, false);
     }
 
     //[Benchmark()]

@@ -55,7 +55,7 @@ var spectrum_alt = complexSignal.ToArray();
 //FFTL.FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTSimpleVectorizedF(spectrum.Length).FastFourierTransform(spectrum_alt, false);
-new FFTSimpleVectorizedH(spectrum.Length).FastFourierTransform(spectrum_alt, false);
+new FFTAvxVectorizedI(spectrum.Length).FastFourierTransform(spectrum_alt, false);
 //RecursiveFFTE.FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTSimpleBigLut(spectrum.Length).FastFourierTransform(spectrum_alt, false);
 

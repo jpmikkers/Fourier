@@ -12,11 +12,6 @@ public unsafe class AlignedMemoryManager<T> : MemoryManager<T> where T : struct
 
     public AlignedMemoryManager(int length, int alignment)
     {
-        if (Marshal.SizeOf<T>() % alignment != 0)
-        {
-            throw new ArgumentException($"element length ({Marshal.SizeOf<T>()}) is not a multiple of alignment ({alignment}). Consider padding the element");
-        }
-
         var numBytes = (nuint)(length * Marshal.SizeOf<T>());
         _ptr = NativeMemory.AlignedAlloc(numBytes, (nuint)alignment);
         NativeMemory.Clear(_ptr, numBytes);
