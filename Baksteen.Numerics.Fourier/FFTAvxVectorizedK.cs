@@ -5,12 +5,12 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.X86;
 
-public class FFTAvxVectorizedI
+public class FFTAvxVectorizedK
 {
     private AlignedMemoryManager<Complex> _alignedMemoryManager;
     private readonly Memory<Complex> _wtable;
 
-    public FFTAvxVectorizedI(int length)
+    public FFTAvxVectorizedK(int length)
     {
         if (!Avx.IsSupported || !Fma.IsSupported || !Sse2.IsSupported)
         {
@@ -51,15 +51,8 @@ public class FFTAvxVectorizedI
         {
             if (nrOfParts > 0)
             {
-                var ptmp = vptr;
-
-                // no mul needed in the first combination layer, every w is 1+0i and -1+0i
-                for (var p = 0; p < nrOfParts; p++)
-                {
-                    Vectorized.Sse2ButterflyOne(ptmp, ptmp + 1);
-                    ptmp += partStride;
-                }
-
+                //Vectorized.AvxButterfliesOnes(vptr, nrOfParts);
+                Vectorized.Sse2ButterfliesOnes(vptr, nrOfParts);
                 butterfliesPerPart <<= 1;
                 nrOfParts >>= 1;
                 partStride <<= 1;

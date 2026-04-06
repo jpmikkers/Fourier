@@ -24,8 +24,10 @@ public static class FFTUtils
 
     public static void Scale(Span<Complex> data)
     {
-        var scaleFactor = Math.ScaleB(1.0, -BitOperations.Log2((uint)data.Length));
-        foreach (ref var c in data) { c *= scaleFactor; }
+        //var scaleFactor = Math.ScaleB(1.0, -BitOperations.Log2((uint)data.Length));
+        //foreach (ref var c in data) { c *= scaleFactor; }
+        var shift = -BitOperations.Log2((uint)data.Length);
+        foreach (ref var c in data) { c = new Complex(Math.ScaleB(c.Real, shift), Math.ScaleB(c.Imaginary, shift)); }
     }
 
     public static void AssertAlignment<T>(Span<T> data, int alignment) where T : struct

@@ -4,10 +4,50 @@ using System.Numerics;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
+unsafe
+{
+    var tst = new Complex[] { new Complex(1, 2), new Complex(3, 4), new Complex(15, 16), new Complex(17, 18) };
+    var msk = Vector256.Create(0.0, 0.0, -0.0, -0.0);
+
+    fixed (Complex* vptr = tst)
+    {
+        var even0odd0 = Avx.LoadVector256((double*)vptr);               // (e0r,e0i,o0r,o0i)
+        var odd0even0 = Avx.Permute2x128(even0odd0, even0odd0, 0x01);   // (o0r,o0i, e0r,e0i)
+        var evenegodd = Avx.Xor(even0odd0, msk);                        // (e0r,e0i,-o0r,-o0i)
+        var result = Avx.Add(odd0even0, evenegodd);                     // (e0r-o0r,e0i-o0i,e0r+o0r,e0i+o0i)
+
+
+        //var odddup = Avx.Permute2x128(even0odd0, even0odd0, 0x33);    // (o0r,o0i,o0r,o0i)
+        //var evendup = Avx.Permute2x128(even0odd0, even0odd0, 0x00);  // (e0r,e0i,e0r,e0i)
+        //var result = Avx.Add(evendup, oddnegodd);                     // (e0r+o0r,e0i+o0i,e0r-o0r,e0i-o0i)
+
+        //var even0odd0 = Avx.LoadVector256((double*)vptr);               // (e0r,e0i,o0r,o0i)
+        //var odddup = Avx.Permute2x128(even0odd0, even0odd0, 0x33);    // (o0r,o0i,o0r,o0i)
+        //var evendup = Avx.Permute2x128(even0odd0, even0odd0, 0x00);  // (e0r,e0i,e0r,e0i)
+        //var oddnegodd = Avx.Xor(odddup, msk);                         // (o0r,o0i,-o0r,-o0i)
+        //var result = Avx.Add(evendup, oddnegodd);                     // (e0r+o0r,e0i+o0i,e0r-o0r,e0i-o0i)
+
+        //var even0odd0 = Avx.LoadVector256((double*)vptr);               // (e0r,e0i,o0r,o0i)
+        //var even1odd1 = Avx.LoadVector256((double*)(vptr + 2));         // (e1r,e1i,o1r,o1i)
+        //var evens = Avx.Permute2x128(even0odd0, even1odd1, 0x20);       // (e0r e0i e1r e1i)
+        //var odds = Avx.Permute2x128(even0odd0, even1odd1, 0x31);        // (o0r o0i o1r o1i)
+
+        //var ra = Avx.Add(evens, odds);           // (e0r+o0r, e0i+o0i, e1r+o1r, e1i+o1i)
+        //var rb = Avx.Subtract(evens, odds);      // (e0r-o0r, e0i-o0i, e1r-o1r, e1i-o1i)
+
+        //evens = Avx.Permute2x128(ra, rb, 0x20);
+        //odds = Avx.Permute2x128(ra, rb, 0x31);
+    }
+}
+
 //Vector256<double> a = Vector256.Create(1.0, 2.0, 3.0, 4.0);
 //Vector256<double> b = Vector256.Create(5.0, 6.0, 7.0, 8.0);
+//Vector256<double> c = Vector256.Create(5.0, -6.0, 7.0, -8.0);
 
 //var result1 = Vectorized.ComplexMulAvx(a, b);
+//var result2 = Vectorized.ComplexMulAvx(a, c);
+//var result3 = Vectorized.ComplexMulAvxConjugate(a, b);
+//return;
 //var result2 = new Complex(1, 2) * new Complex(5, 6);
 //var result3 = new Complex(3, 4) * new Complex(7, 8);
 
@@ -55,7 +95,8 @@ var spectrum_alt = complexSignal.ToArray();
 //FFTL.FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTM(spectrum_alt.Length).FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTSimpleVectorizedF(spectrum.Length).FastFourierTransform(spectrum_alt, false);
-new FFTAvxVectorizedI(spectrum.Length).FastFourierTransform(spectrum_alt, false);
+var avxtmp = new FFTAvxVectorizedK(spectrum.Length);
+avxtmp.FastFourierTransform(spectrum_alt, false);
 //RecursiveFFTE.FastFourierTransform(spectrum_alt, isInverse: false);
 //new FFTSimpleBigLut(spectrum.Length).FastFourierTransform(spectrum_alt, false);
 
@@ -64,6 +105,7 @@ plot2alt.Add.Signal(spectrum_alt.Select(Complex.Abs).ToList());
 plot2alt.Title("FFT Spectrum");
 plot2alt.SavePng("spectrum fft.png", 1024, 768);
 
+//avxtmp.FastFourierTransform(spectrum_alt, true);
 FFTH.FastFourierTransform(spectrum_alt, isInverse: true);
 var reconstructed = spectrum_alt.Select(x => x.Real).ToArray();
 //var reconstructed = DFT.DiscreteFourierTransform(spectrum_alt, forward: false).Select(x => x.Real).ToArray();

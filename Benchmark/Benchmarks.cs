@@ -27,6 +27,8 @@ public class Benchmarks
     private FFTSimpleVectorizedG fftsvg;
     private FFTSimpleVectorizedH fftsvh;
     private FFTAvxVectorizedI fftsvi;
+    private FFTAvxVectorizedJ fftsvj;
+    private FFTAvxVectorizedK fftsvk;
     private FFTSimpleBigLut fftsbl;
 
     [GlobalSetup]
@@ -45,6 +47,8 @@ public class Benchmarks
         fftsvg = new FFTSimpleVectorizedG(fftsize);
         fftsvh = new FFTSimpleVectorizedH(fftsize);
         fftsvi = new FFTAvxVectorizedI(fftsize);
+        fftsvj = new FFTAvxVectorizedJ(fftsize);
+        fftsvk = new FFTAvxVectorizedK(fftsize);
         fftsbl = new FFTSimpleBigLut(fftsize);
     }
 
@@ -103,14 +107,14 @@ public class Benchmarks
     //}
 
     //[Benchmark(Baseline = true)]
-    [Benchmark()]
+    //[Benchmark()]
     public void BenchFFTSimpleVectorizedF()
     {
         ResetTmpData();
         fftsvf.FastFourierTransform(tmpdata.Span, false);
     }
 
-    [Benchmark()]
+    //[Benchmark()]
     public void BenchFFTSimpleVectorizedG()
     {
         ResetTmpData();
@@ -125,10 +129,24 @@ public class Benchmarks
     //}
 
     [Benchmark()]
-    public void BenchFFTSimpleVectorizedI()
+    public void BenchFFTAvxVectorizedI()
     {
         ResetTmpData();
         fftsvi.FastFourierTransform(tmpdata.Span, false);
+    }
+
+    //[Benchmark()]
+    public void BenchFFTAvxVectorizedJ()
+    {
+        ResetTmpData();
+        fftsvj.FastFourierTransform(tmpdata.Span, true);
+    }
+
+    [Benchmark()]
+    public void BenchFFTAvxVectorizedK()
+    {
+        ResetTmpData();
+        fftsvk.FastFourierTransform(tmpdata.Span, false);
     }
 
     //[Benchmark()]
